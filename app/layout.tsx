@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Homi - Food Ordering Preferences',
+  description: 'Set up your food ordering preferences with our friendly chat assistant',
   generator: 'v0.app',
   icons: {
     icon: [
