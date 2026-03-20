@@ -26,7 +26,9 @@ export function useChatFlow() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [isInitialized, setIsInitialized] = useState(false);
-
+  useEffect(() => {
+    console.log("userIntent updated:", userIntent);
+  }, [userIntent]);
   // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
