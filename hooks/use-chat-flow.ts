@@ -211,7 +211,7 @@ export function useChatFlow() {
     setSubmitStatus("idle");
 
     try {
-      const response = await fetch("https://YOUR_N8N_WEBHOOK_URL", {
+      const response = await fetch("https://sushmasara9.app.n8n.cloud/webhook-test/homi-orderpreference", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
