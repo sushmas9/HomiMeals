@@ -40,9 +40,10 @@ export function RecommendationsContainer() {
       }
 
       const data = await response.json();
-
+      console.log("DATA:", data);
       // Normalize response: handle both { output: [...] } and [...] formats
       const mealsData: Meal[] = data.output || data;
+      console.log("MEALS:", meals);
 
       if (!Array.isArray(mealsData)) {
         throw new Error("Invalid response format");
