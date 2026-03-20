@@ -61,7 +61,7 @@ export function useChatFlow() {
   // Initialize messages based on current step
   useEffect(() => {
     if (!isInitialized) return;
-    
+
     const initialMessages: Message[] = [
       {
         id: createId(),
@@ -173,8 +173,8 @@ export function useChatFlow() {
   }, [addUserMessage, addBotMessage]);
 
   const setDetails = useCallback((details: string) => {
-    const normalizedDetails = details.toLowerCase() === "none" || details.toLowerCase() === "na" || details.trim() === "" 
-      ? "" 
+    const normalizedDetails = details.toLowerCase() === "none" || details.toLowerCase() === "na" || details.trim() === ""
+      ? ""
       : details;
     setUserIntent((prev) => ({ ...prev, additional_details: normalizedDetails }));
     addUserMessage(normalizedDetails || "None");
@@ -209,7 +209,7 @@ export function useChatFlow() {
   const submitOrder = useCallback(async () => {
     setIsSubmitting(true);
     setSubmitStatus("idle");
-    
+
     try {
       const response = await fetch("https://YOUR_N8N_WEBHOOK_URL", {
         method: "POST",
@@ -218,7 +218,7 @@ export function useChatFlow() {
         },
         body: JSON.stringify(userIntent),
       });
-      
+
       if (response.ok) {
         setSubmitStatus("success");
         setCurrentStep("complete");
