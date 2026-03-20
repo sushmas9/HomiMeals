@@ -22,7 +22,7 @@ export function RecommendationsContainer() {
     setHasSubmitted(true);
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
+      const response = await fetch("https://sushmasara9.app.n8n.cloud/webhook-test/meal-recommendation", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,10 +40,10 @@ export function RecommendationsContainer() {
       }
 
       const data = await response.json();
-      
+
       // Normalize response: handle both { output: [...] } and [...] formats
       const mealsData: Meal[] = data.output || data;
-      
+
       if (!Array.isArray(mealsData)) {
         throw new Error("Invalid response format");
       }
@@ -52,8 +52,8 @@ export function RecommendationsContainer() {
     } catch (err) {
       console.error("Failed to fetch recommendations:", err);
       setError(
-        err instanceof Error 
-          ? err.message 
+        err instanceof Error
+          ? err.message
           : "Failed to fetch meal recommendations. Please try again."
       );
       setMeals([]);
@@ -77,8 +77,8 @@ export function RecommendationsContainer() {
       ) : (
         <>
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={handleReset}
               className="text-muted-foreground hover:text-foreground"
