@@ -31,14 +31,12 @@ export function useChatFlow() {
     console.log("userIntent updated:", userIntent);
   }, [userIntent]);
 
-  // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as UserIntent;
         setUserIntent(parsed);
-        // Determine current step based on saved data
         if (parsed.location.zip) {
           setCurrentStep("review");
         } else if (parsed.additional_details !== null) {
@@ -55,14 +53,12 @@ export function useChatFlow() {
     setIsInitialized(true);
   }, []);
 
-  // Save to localStorage whenever intent changes
   useEffect(() => {
     if (isInitialized) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(userIntent));
     }
   }, [userIntent, isInitialized]);
 
-  // Initialize messages based on current step
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -74,7 +70,6 @@ export function useChatFlow() {
       },
     ];
 
-    // Add messages for completed steps
     if (userIntent.cuisine) {
       initialMessages.push(
         { id: createId(), role: "bot", content: "What type of cuisine are you in the mood for?", component: "cuisine" },
@@ -103,7 +98,6 @@ export function useChatFlow() {
       );
     }
 
-    // Add current step prompt
     if (currentStep === "cuisine" && !userIntent.cuisine) {
       initialMessages.push({
         id: createId(),
@@ -227,16 +221,20 @@ export function useChatFlow() {
       if (!response.ok) throw new Error("Submission failed");
 
       const data = await response.json();
-      const meals = Array.isArray(data) ? data[0]?.meals : data.meals;
 
-      // Store meals in sessionStorage so /recommendations page can read them
+      // Handle structured error from n8n (e.g. unsupported zip code)
+      if (data.error === true) {
+        setSubmitStatus("error");
+        addBotMessage(data.message || "Something went wrong. Please try again.");
+        return;
+      }
+
+      const meals = Array.isArray(data) ? data[0]?.meals : data.meals;
       sessionStorage.setItem("homi_meals", JSON.stringify(meals ?? []));
 
       setSubmitStatus("success");
       setCurrentStep("complete");
       localStorage.removeItem(STORAGE_KEY);
-
-      // Navigate to recommendations page
       window.location.href = "/recommendations";
     } catch {
       setSubmitStatus("error");
@@ -245,37 +243,6 @@ export function useChatFlow() {
       setIsSubmitting(false);
     }
   }, [userIntent, addBotMessage]);
-
-  // const submitOrder = useCallback(async () => {
-  //   setIsSubmitting(true);
-  //   setSubmitStatus("idle");
-
-  //   try {
-  //     const response = await fetch("https://sushmasara9.app.n8n.cloud/webhook-test/homi-orderpreference", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(userIntent),
-  //     });
-
-  //     if (response.ok) {
-  //       setSubmitStatus("success");
-  //       setCurrentStep("complete");
-  //       localStorage.removeItem(STORAGE_KEY);
-  //       addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
-  //     } else {
-  //       throw new Error("Submission failed");
-  //     }
-  //   } catch {
-  //     setSubmitStatus("success");
-  //     setCurrentStep("complete");
-  //     localStorage.removeItem(STORAGE_KEY);
-  //     addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // }, [userIntent, addBotMessage]);
 
   const resetChat = useCallback(() => {
     setUserIntent(initialIntent);
