@@ -13,16 +13,16 @@ interface MealCardProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 90) return "text-emerald-600";
-  if (score >= 80) return "text-emerald-500";
-  if (score >= 70) return "text-orange-500";
+  if (score >= 9) return "text-emerald-600";
+  if (score >= 8) return "text-emerald-500";
+  if (score >= 7) return "text-orange-500";
   return "text-orange-400";
 }
 
 function getProgressColor(score: number): string {
-  if (score >= 90) return "bg-emerald-500";
-  if (score >= 80) return "bg-emerald-400";
-  if (score >= 70) return "bg-orange-400";
+  if (score >= 9) return "bg-emerald-500";
+  if (score >= 8) return "bg-emerald-400";
+  if (score >= 7) return "bg-orange-400";
   return "bg-orange-300";
 }
 
@@ -44,7 +44,7 @@ export function MealCard({ meal }: MealCardProps) {
             "flex items-center gap-1 px-2 py-1 rounded-full bg-background/90 backdrop-blur-sm shadow-sm",
           )}>
             <span className={cn("text-lg font-bold", getScoreColor(meal.score))}>
-              {meal.score}
+              {meal.score * 10}
             </span>
             <span className="text-xs text-muted-foreground">/100</span>
           </div>
@@ -71,7 +71,7 @@ export function MealCard({ meal }: MealCardProps) {
 
         <div className="mt-3">
           <Progress
-            value={meal.score}
+            value={meal.score * 10}
             className="h-1.5 bg-muted"
           />
           <div
@@ -79,7 +79,7 @@ export function MealCard({ meal }: MealCardProps) {
               "h-1.5 rounded-full -mt-1.5 transition-all",
               getProgressColor(meal.score)
             )}
-            style={{ width: `${meal.score}%` }}
+            style={{ width: `${meal.score * 10}%` }}
           />
         </div>
 
