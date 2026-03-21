@@ -16,6 +16,15 @@ export function RecommendationsContainer() {
   const [error, setError] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  useEffect(() => {
+    const stored = sessionStorage.getItem("homi_meals");
+    if (stored) {
+      setMeals(JSON.parse(stored));
+      setHasSubmitted(true);
+      sessionStorage.removeItem("homi_meals");
+    }
+  }, []);
+
   const handleSubmit = async (preferences: MealPreferences) => {
     setIsLoading(true);
     setError(null);
