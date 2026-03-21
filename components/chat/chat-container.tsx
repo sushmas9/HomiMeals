@@ -11,6 +11,7 @@ import { ReviewCard } from "./review-card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RotateCcw, CheckCircle2 } from "lucide-react";
+import { MealCard } from "@/components/meals/meal-card";
 
 export function ChatContainer() {
   const {
@@ -20,6 +21,7 @@ export function ChatContainer() {
     isSubmitting,
     submitStatus,
     isInitialized,
+    meals,
     setCuisine,
     setDietary,
     setDetails,
@@ -47,18 +49,33 @@ export function ChatContainer() {
   const renderInput = () => {
     if (submitStatus === "success" || currentStep === "complete") {
       return (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-6 text-center">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
-          <div>
-            <h3 className="font-semibold">Order Preferences Submitted!</h3>
-            <p className="text-sm text-muted-foreground">
-              We'll find the best food options for you.
-            </p>
+        <div className="space-y-6">
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-6 text-center">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
+            <div>
+              <h3 className="font-semibold">Order Preferences Submitted!</h3>
+              <p className="text-sm text-muted-foreground">
+                {meals.length > 0
+                  ? `We found ${meals.length} meal recommendations for you!`
+                  : "We'll find the best food options for you."}
+              </p>
+            </div>
+            <Button variant="outline" onClick={resetChat}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Start New Order
+            </Button>
           </div>
-          <Button variant="outline" onClick={resetChat}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Start New Order
-          </Button>
+          
+          {meals.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Recommended Meals</h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {meals.map((meal, index) => (
+                  <MealCard key={index} meal={meal} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
