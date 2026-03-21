@@ -27,8 +27,8 @@ function getProgressColor(score: number): string {
 }
 
 export function MealCard({ meal }: MealCardProps) {
-  const imageUrl = meal.image || getCuisinePlaceholder(meal.cuisine);
-  
+  const imageUrl = meal.image || getCuisinePlaceholder(meal.cuisine, meal.name);
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg group">
       <div className="relative h-40 w-full overflow-hidden">
@@ -50,7 +50,7 @@ export function MealCard({ meal }: MealCardProps) {
           </div>
         </div>
       </div>
-      
+
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -70,11 +70,11 @@ export function MealCard({ meal }: MealCardProps) {
         )}
 
         <div className="mt-3">
-          <Progress 
-            value={meal.score} 
+          <Progress
+            value={meal.score}
             className="h-1.5 bg-muted"
           />
-          <div 
+          <div
             className={cn(
               "h-1.5 rounded-full -mt-1.5 transition-all",
               getProgressColor(meal.score)
@@ -84,14 +84,14 @@ export function MealCard({ meal }: MealCardProps) {
         </div>
 
         <div className="flex flex-wrap gap-2 mt-3">
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant="secondary"
             className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0"
           >
             {meal.dietary}
           </Badge>
           {meal.additional && (
-            <Badge 
+            <Badge
               variant="secondary"
               className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-0"
             >
