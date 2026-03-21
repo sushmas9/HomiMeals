@@ -43,7 +43,7 @@ export function RecommendationsContainer() {
       console.log("DATA:", data);
       // Normalize response: handle both { output: [...] } and [...] formats
       const mealsData: Meal[] = data.output || data;
-      console.log("MEALS:", meals);
+      console.log("MEALS:", mealsData);
 
       if (!Array.isArray(mealsData)) {
         throw new Error("Invalid response format");
