@@ -215,31 +215,67 @@ export function useChatFlow() {
     setSubmitStatus("idle");
 
     try {
-      const response = await fetch("https://sushmasara9.app.n8n.cloud/webhook-test/homi-orderpreference", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userIntent),
-      });
+      const response = await fetch(
+        "https://sushmasara9.app.n8n.cloud/webhook-test/homi-orderpreference",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userIntent),
+        }
+      );
 
-      if (response.ok) {
-        setSubmitStatus("success");
-        setCurrentStep("complete");
-        localStorage.removeItem(STORAGE_KEY);
-        addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
-      } else {
-        throw new Error("Submission failed");
-      }
-    } catch {
+      if (!response.ok) throw new Error("Submission failed");
+
+      const data = await response.json();
+      const meals = Array.isArray(data) ? data[0]?.meals : data.meals;
+
+      // Store meals in sessionStorage so /recommendations page can read them
+      sessionStorage.setItem("homi_meals", JSON.stringify(meals ?? []));
+
       setSubmitStatus("success");
       setCurrentStep("complete");
       localStorage.removeItem(STORAGE_KEY);
-      addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
+
+      // Navigate to recommendations page
+      window.location.href = "/recommendations";
+    } catch {
+      setSubmitStatus("error");
+      addBotMessage("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   }, [userIntent, addBotMessage]);
+
+  // const submitOrder = useCallback(async () => {
+  //   setIsSubmitting(true);
+  //   setSubmitStatus("idle");
+
+  //   try {
+  //     const response = await fetch("https://sushmasara9.app.n8n.cloud/webhook-test/homi-orderpreference", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(userIntent),
+  //     });
+
+  //     if (response.ok) {
+  //       setSubmitStatus("success");
+  //       setCurrentStep("complete");
+  //       localStorage.removeItem(STORAGE_KEY);
+  //       addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
+  //     } else {
+  //       throw new Error("Submission failed");
+  //     }
+  //   } catch {
+  //     setSubmitStatus("success");
+  //     setCurrentStep("complete");
+  //     localStorage.removeItem(STORAGE_KEY);
+  //     addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // }, [userIntent, addBotMessage]);
 
   const resetChat = useCallback(() => {
     setUserIntent(initialIntent);
