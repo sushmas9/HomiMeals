@@ -216,9 +216,10 @@ export function useChatFlow() {
     setMeals([]);
 
     try {
-      console.log("[v0] Sending order preferences to webhook:", userIntent);
+      console.log("[v0] Sending order preferences to API route:", userIntent);
       
-      const response = await fetch("https://sushmasara9.app.n8n.cloud/webhook-test/meal-recommendation", {
+      // Use local API route to avoid CORS issues
+      const response = await fetch("/api/submit-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
