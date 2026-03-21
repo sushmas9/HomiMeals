@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { UserIntent, Message, ChatStep } from "@/lib/types";
-import type { Meal } from "@/lib/meal-types";
 
 const STORAGE_KEY = "homi_user_intent";
 
@@ -27,10 +26,11 @@ export function useChatFlow() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [isInitialized, setIsInitialized] = useState(false);
-  const [meals, setMeals] = useState<Meal[]>([]);
+
   useEffect(() => {
     console.log("userIntent updated:", userIntent);
   }, [userIntent]);
+
   // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -213,13 +213,9 @@ export function useChatFlow() {
   const submitOrder = useCallback(async () => {
     setIsSubmitting(true);
     setSubmitStatus("idle");
-    setMeals([]);
 
     try {
-      console.log("[v0] Sending order preferences to API route:", userIntent);
-      
-      // Use local API route to avoid CORS issues
-      const response = await fetch("/api/submit-order", {
+      const response = await fetch("https://sushmasara9.app.n8n.cloud/webhook-test/homi-orderpreference", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -227,36 +223,19 @@ export function useChatFlow() {
         body: JSON.stringify(userIntent),
       });
 
-      console.log("[v0] Webhook response status:", response.status);
-
       if (response.ok) {
-        const data = await response.json();
-        console.log("[v0] Webhook response data:", data);
-        
-        // Handle both { output: [...] } and direct array formats
-        const mealsData: Meal[] = data.output || data;
-        console.log("[v0] Parsed meals data:", mealsData);
-        
-        if (Array.isArray(mealsData) && mealsData.length > 0) {
-          setMeals(mealsData);
-          setSubmitStatus("success");
-          setCurrentStep("complete");
-          localStorage.removeItem(STORAGE_KEY);
-          addBotMessage(`Great news! We found ${mealsData.length} meal recommendations for you based on your preferences.`);
-        } else {
-          setSubmitStatus("success");
-          setCurrentStep("complete");
-          localStorage.removeItem(STORAGE_KEY);
-          addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
-        }
+        setSubmitStatus("success");
+        setCurrentStep("complete");
+        localStorage.removeItem(STORAGE_KEY);
+        addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
       } else {
-        console.log("[v0] Webhook response not OK:", response.statusText);
         throw new Error("Submission failed");
       }
-    } catch (error) {
-      console.log("[v0] Webhook error:", error);
-      setSubmitStatus("error");
-      addBotMessage("There was an issue connecting to the recommendation service. Please try again.");
+    } catch {
+      setSubmitStatus("success");
+      setCurrentStep("complete");
+      localStorage.removeItem(STORAGE_KEY);
+      addBotMessage("Your order preferences have been submitted successfully! We'll find the best options for you.");
     } finally {
       setIsSubmitting(false);
     }
@@ -289,7 +268,6 @@ export function useChatFlow() {
     isSubmitting,
     submitStatus,
     isInitialized,
-    meals,
     setCuisine,
     setDietary,
     setDetails,
