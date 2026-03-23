@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { ArrowLeft, Star, ShieldCheck, ChefHat } from "lucide-react";
-import { getCookImage } from "@/lib/food-images";
+import { DynamicImage } from "@/components/ui/dynamic-image";
+import { getSeed } from "@/lib/food-images";
 
 interface Cook {
   id: string;
@@ -57,7 +58,9 @@ export default function CooksPage() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Home Cooks Near You</h1>
-            <p className="text-sm text-muted-foreground">{cooks.length} cooks found · Ranked by match & certification</p>
+            <p className="text-sm text-muted-foreground">
+              {cooks.length} cooks found · Ranked by match & certification
+            </p>
           </div>
         </div>
 
@@ -76,8 +79,9 @@ export default function CooksPage() {
               <button key={cook.id} onClick={() => router.push(`/cooks/${cook.id}`)}
                 className="group overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm hover:shadow-md transition-all">
                 <div className="relative h-36 w-full overflow-hidden">
-                  <img
-                    src={getCookImage(cook.cuisine, cook.name)}
+                  <DynamicImage
+                    query={`${cook.cuisine} food cooking homemade`}
+                    seed={getSeed(cook.name)}
                     alt={cook.name}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />

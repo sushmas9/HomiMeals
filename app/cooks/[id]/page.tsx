@@ -5,7 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { Header } from "@/components/header";
 import { ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getMealImage } from "@/lib/food-images";
+import { DynamicImage } from "@/components/ui/dynamic-image";
+import { getSeed } from "@/lib/food-images";
 
 interface Meal {
   id: string;
@@ -114,7 +115,9 @@ export default function CookDetailPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground capitalize">{cook.cuisine} cuisine · {cook.city}, {cook.state}</p>
+                <p className="text-sm text-muted-foreground capitalize">
+                  {cook.cuisine} cuisine · {cook.city}, {cook.state}
+                </p>
                 <div className="mt-1 flex items-center gap-2">
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-orange-400 text-orange-400" />
@@ -160,8 +163,9 @@ export default function CookDetailPage() {
               return (
                 <div key={meal.id} className="overflow-hidden rounded-2xl border border-border bg-card">
                   <div className="h-36 w-full overflow-hidden">
-                    <img
-                      src={getMealImage(meal.name, meal.cuisine)}
+                    <DynamicImage
+                      query={`${meal.name} ${meal.cuisine} food dish`}
+                      seed={getSeed(meal.name)}
                       alt={meal.name}
                       className="h-full w-full object-cover"
                     />
