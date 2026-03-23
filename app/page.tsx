@@ -254,7 +254,12 @@ export default function Home() {
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && sendMessage(input)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        sendMessage(input);
+                      }
+                    }}
                     placeholder={cfg.placeholder}
                     disabled={isLoading}
                     className="flex-1 text-sm"
