@@ -19,15 +19,25 @@ interface Cook {
   match_reason?: string;
 }
 
-function getCuisineImage(cuisine: string): string {
-  const map: Record<string, string> = {
-    indian: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=200&fit=crop",
-    italian: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=200&fit=crop",
-    mexican: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=200&fit=crop",
-    thai: "https://images.unsplash.com/photo-1559314809-0d155014e29e?w=400&h=200&fit=crop",
-    chinese: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&h=200&fit=crop",
-  };
-  return map[cuisine?.toLowerCase()] || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=200&fit=crop";
+const FOOD_PHOTOS = [
+  "1585937421612-70a008356fbe",
+  "1546069901-ba9599a7e63c",
+  "1512621776951-a57141f2eefd",
+  "1455619452474-d2be8b1e70cd",
+  "1467003909585-2f8a72700288",
+  "1540189549336-e6e99e2a3e46",
+  "1504674900247-0877df9cc836",
+  "1476224203421-9ac39bcb3327",
+  "1565299624946-b28f40a0ae38",
+  "1559314809-0d155014e29e",
+  "1525755662778-989d0524087e",
+  "1565299585323-38d6b0865b47",
+];
+
+function getCuisineImage(cuisine: string, name: string): string {
+  const seed = (name + cuisine).split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const photo = FOOD_PHOTOS[seed % FOOD_PHOTOS.length];
+  return `https://images.unsplash.com/photo-${photo}?w=400&h=200&fit=crop`;
 }
 
 export default function CooksPage() {
@@ -87,7 +97,7 @@ export default function CooksPage() {
               <button key={cook.id} onClick={() => router.push(`/cooks/${cook.id}`)}
                 className="group overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm hover:shadow-md transition-all">
                 <div className="relative h-36 w-full overflow-hidden">
-                  <img src={getCuisineImage(cook.cuisine)} alt={cook.name}
+                  <img src={getCuisineImage(cook.cuisine, cook.name)} alt={cook.name}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   {cook.license_verified && (
                     <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 text-xs font-semibold text-white shadow">
