@@ -143,7 +143,7 @@ export function ChatContainer() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col">
+    <div className="flex h-full flex-col">
       <ScrollArea className="flex-1 px-4">
         <div className="mx-auto max-w-2xl space-y-4 py-6">
           {messages.map((msg) => (
