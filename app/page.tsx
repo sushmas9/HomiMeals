@@ -42,10 +42,10 @@ const STEP_CONFIG: Record<string, { placeholder: string; format: string; hints: 
     hintLabel: "Try typing:",
   },
   location: {
-    placeholder: "Enter your full address...",
-    format: "Format: Street, City, State, Zip",
-    hints: ["123 Main St, Irving, TX 75063", "456 Oak Ave, Dallas, TX 75201"],
-    hintLabel: "Address examples:",
+    placeholder: "e.g. 123 Main St, Irving, TX 75063",
+    format: "Format: Street Address, City, State, Zip",
+    hints: ["123 Main St, Irving, TX 75063", "456 Oak Ave, Dallas, TX 75201", "789 Elm Rd, Irving, TX 75039"],
+    hintLabel: "Address format examples:",
   },
   dietary: {
     placeholder: "Any dietary restrictions?",
@@ -206,7 +206,7 @@ export default function Home() {
             </div>
 
             {/* Messages */}
-            <div className="h-80 overflow-y-auto p-4 space-y-4">
+            <div className="h-80 overflow-y-auto overscroll-contain p-4 space-y-4">
               {messages.map((msg) => (
                 <div key={msg.id} className="space-y-2">
                   <div className={cn("flex w-full", msg.role === "bot" ? "justify-start" : "justify-end")}>
