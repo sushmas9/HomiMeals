@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Header } from "@/components/header";
 import { ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getMealImage } from "@/lib/food-images";
 
 interface Meal {
   id: string;
@@ -35,12 +36,6 @@ interface CartItem {
 
 const COOK_MEALS_WEBHOOK = "https://sushmasara9.app.n8n.cloud/webhook/homi-cook-meals";
 
-function getMealImage(name: string, cuisine: string): string {
-  const query = encodeURIComponent(`${name} ${cuisine} food`);
-  const seed = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return `https://source.unsplash.com/400x200/?${query}&sig=${seed}`;
-}
-
 export default function CookDetailPage() {
   const [cook, setCook] = useState<Cook | null>(null);
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -52,7 +47,6 @@ export default function CookDetailPage() {
   const cookId = params.id as string;
 
   useEffect(() => {
-    // Get cook from sessionStorage
     const stored = sessionStorage.getItem("homi_cooks");
     if (stored) {
       try {
@@ -63,17 +57,13 @@ export default function CookDetailPage() {
       } catch { }
     }
 
-    // Fetch meals from n8n
     fetch(COOK_MEALS_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cook_id: cookId }),
     })
       .then(r => r.json())
-      .then(data => {
-        const list = Array.isArray(data.meals) ? data.meals : [];
-        setMeals(list);
-      })
+      .then(data => setMeals(Array.isArray(data.meals) ? data.meals : []))
       .catch(() => setMeals([]))
       .finally(() => setIsLoading(false));
   }, [cookId]);
@@ -104,39 +94,37 @@ export default function CookDetailPage() {
       <Header />
       <main className="mx-auto max-w-4xl px-4 py-8">
 
-        {/* Back button */}
         <button onClick={() => router.push("/cooks")}
           className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" /> Back to cooks
         </button>
 
-        {/* Cook profile */}
         {cook && (
           <div className="mb-8 rounded-2xl border border-border bg-card p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 text-2xl font-bold text-orange-500">
-                  {cook.name[0]}
+            <div className="flex items-start gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 text-2xl font-bold text-orange-500">
+                {cook.name[0]}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-foreground">{cook.name}</h1>
+                  {cook.license_verified && (
+                    <span className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                      <ShieldCheck className="h-3 w-3" /> TX Licensed
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold text-foreground">{cook.name}</h1>
-                    {cook.license_verified && (
-                      <span className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                        <ShieldCheck className="h-3 w-3" /> TX Licensed
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground capitalize">{cook.cuisine} cuisine · {cook.city}, {cook.state}</p>
-                  <div className="mt-1 flex items-center gap-1">
+                <p className="text-sm text-muted-foreground capitalize">{cook.cuisine} cuisine · {cook.city}, {cook.state}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-orange-400 text-orange-400" />
                     <span className="text-sm font-medium">{cook.rating}</span>
-                    {cook.match_score && (
-                      <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">
-                        {cook.match_score}/10 match
-                      </span>
-                    )}
                   </div>
+                  {cook.match_score && (
+                    <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">
+                      {cook.match_score}/10 match
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -148,7 +136,6 @@ export default function CookDetailPage() {
           </div>
         )}
 
-        {/* Meals */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">Menu</h2>
           {totalItems > 0 && (
@@ -173,8 +160,11 @@ export default function CookDetailPage() {
               return (
                 <div key={meal.id} className="overflow-hidden rounded-2xl border border-border bg-card">
                   <div className="h-36 w-full overflow-hidden">
-                    <img src={getMealImage(meal.name, meal.cuisine)} alt={meal.name}
-                      className="h-full w-full object-cover" />
+                    <img
+                      src={getMealImage(meal.name, meal.cuisine)}
+                      alt={meal.name}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
@@ -191,7 +181,6 @@ export default function CookDetailPage() {
                       </div>
                       <span className="text-base font-bold text-foreground">${meal.price.toFixed(2)}</span>
                     </div>
-
                     <div className="mt-3 flex items-center justify-end">
                       {qty === 0 ? (
                         <Button size="sm" onClick={() => addToCart(meal)}
@@ -219,7 +208,6 @@ export default function CookDetailPage() {
           </div>
         )}
 
-        {/* Cart summary */}
         {showCart && cart.length > 0 && (
           <div className="mt-8 rounded-2xl border border-border bg-card p-6">
             <h3 className="mb-4 font-bold text-foreground">Your Order</h3>

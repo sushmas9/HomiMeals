@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { ArrowLeft, Star, ShieldCheck, ChefHat } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { getCookImage } from "@/lib/food-images";
 
 interface Cook {
   id: string;
@@ -17,12 +17,6 @@ interface Cook {
   license_verified: boolean;
   match_score?: number;
   match_reason?: string;
-}
-
-function getCuisineImage(cuisine: string, name: string): string {
-  const query = encodeURIComponent(`${cuisine} food cooking`);
-  const seed = (name + cuisine).split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return `https://source.unsplash.com/400x200/?${query}&sig=${seed}`;
 }
 
 export default function CooksPage() {
@@ -82,8 +76,11 @@ export default function CooksPage() {
               <button key={cook.id} onClick={() => router.push(`/cooks/${cook.id}`)}
                 className="group overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm hover:shadow-md transition-all">
                 <div className="relative h-36 w-full overflow-hidden">
-                  <img src={getCuisineImage(cook.cuisine, cook.name)} alt={cook.name}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                  <img
+                    src={getCookImage(cook.cuisine, cook.name)}
+                    alt={cook.name}
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
                   {cook.license_verified && (
                     <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 text-xs font-semibold text-white shadow">
                       <ShieldCheck className="h-3 w-3" /> Licensed
