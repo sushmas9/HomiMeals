@@ -61,11 +61,18 @@ const STEP_CONFIG: Record<string, { placeholder: string; format: string; hints: 
   },
 };
 
-function detectStep(missingFields: string[]): string {
-  if (!missingFields || missingFields.length === 0) return "default";
-  if (missingFields.includes("street") || missingFields.includes("zip")) return "location";
-  if (missingFields.includes("dietary_restrictions")) return "dietary";
-  if (missingFields.includes("additional_details")) return "additional";
+function detectStep(missingFields: string[], nextQuestion: string): string {
+  if (missingFields?.length > 0) {
+    if (missingFields.includes("street") || missingFields.includes("zip")) return "location";
+    if (missingFields.includes("dietary_restrictions")) return "dietary";
+    if (missingFields.includes("additional_details")) return "additional";
+  }
+  // Fallback: detect from question text
+  const q = nextQuestion?.toLowerCase() || "";
+  if (q.includes("street") || q.includes("address") || q.includes("zip")) return "location";
+  if (q.includes("dietary") || q.includes("restriction")) return "dietary";
+  if (q.includes("additional") || q.includes("preference")) return "additional";
+  if (q.includes("cuisine") || q.includes("craving")) return "cuisine";
   return "default";
 }
 
@@ -111,7 +118,6 @@ export default function Home() {
         }),
       });
       const data = await res.json();
-      console.log("Intent response:", JSON.stringify(data, null, 2));
 
       if (data.status === "complete" && data.cooks) {
         sessionStorage.setItem("homi_cooks", JSON.stringify(data.cooks));
@@ -127,7 +133,7 @@ export default function Home() {
         const turns = data.clarification_turns || clarificationTurns + 1;
         setClarificationTurns(turns);
         setHistory([...newHistory, { role: "assistant", content: data.next_question || "" }]);
-        const step = detectStep(data.missing_fields || []);
+        const step = detectStep(data.missing_fields || [], data.next_question || "");
         setCurrentStep(step);
         const cfg = STEP_CONFIG[step] || STEP_CONFIG.default;
         setMessages(prev => [...prev, {
