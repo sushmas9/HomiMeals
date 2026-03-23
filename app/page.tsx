@@ -22,15 +22,22 @@ interface Message {
 
 interface Intent {
   cuisine: string | null;
-  dietary_restrictions: string | null;
+  dietary_restrictions: string | string[] | null;
   additional_details: string | null;
-  location: { street: string | null; city: string | null; state: string | null; zip: string | null };
+  location: {
+    street: string | null;
+    city: string | null;
+    state: string | null;
+    zip: string | null;
+  };
 }
 
 const createId = () => Math.random().toString(36).substring(2, 9);
 
 const initialIntent: Intent = {
-  cuisine: null, dietary_restrictions: null, additional_details: null,
+  cuisine: null,
+  dietary_restrictions: null,
+  additional_details: null,
   location: { street: null, city: null, state: null, zip: null },
 };
 
@@ -59,6 +66,12 @@ const STEP_CONFIG: Record<string, { placeholder: string; format: string; hints: 
     hints: ["Spicy", "Low oil", "High protein", "Light meal", "Skip"],
     hintLabel: "Options:",
   },
+  cuisine: {
+    placeholder: "What cuisine are you craving?",
+    format: "Example: Indian, Italian, Thai, Mexican",
+    hints: ["Indian", "Italian", "Thai", "Mexican", "Chinese"],
+    hintLabel: "Options:",
+  },
 };
 
 function detectStep(missingFields: string[], nextQuestion: string): string {
@@ -66,8 +79,8 @@ function detectStep(missingFields: string[], nextQuestion: string): string {
     if (missingFields.includes("street") || missingFields.includes("zip")) return "location";
     if (missingFields.includes("dietary_restrictions")) return "dietary";
     if (missingFields.includes("additional_details")) return "additional";
+    if (missingFields.includes("cuisine")) return "cuisine";
   }
-  // Fallback: detect from question text
   const q = nextQuestion?.toLowerCase() || "";
   if (q.includes("street") || q.includes("address") || q.includes("zip")) return "location";
   if (q.includes("dietary") || q.includes("restriction")) return "dietary";
@@ -100,24 +113,39 @@ export default function Home() {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
+
     const userMsg: Message = { id: createId(), role: "user", content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
+
     const newHistory = [...history, { role: "user", content: text }];
+
+    let requestBody: string;
+    try {
+      requestBody = JSON.stringify({
+        message: text,
+        history: newHistory,
+        current_intent: currentIntent || initialIntent,
+        clarification_turns: clarificationTurns || 0,
+        bypass: false,
+      });
+    } catch (e) {
+      console.error("Serialize error:", e, currentIntent);
+      setMessages(prev => [...prev, { id: createId(), role: "bot", content: "Something went wrong. Please try again." }]);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch(INTENT_WEBHOOK, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text, history: newHistory,
-          current_intent: currentIntent,
-          clarification_turns: clarificationTurns,
-          bypass: false,
-        }),
+        body: requestBody,
       });
+
       const data = await res.json();
+      console.log("Intent response:", JSON.stringify(data, null, 2));
 
       if (data.status === "complete" && data.cooks) {
         sessionStorage.setItem("homi_cooks", JSON.stringify(data.cooks));
@@ -128,11 +156,16 @@ export default function Home() {
           content: `Found ${data.cooks.length} home cooks for you! Redirecting...`,
         }]);
         setTimeout(() => { window.location.href = "/cooks"; }, 1500);
+
+      } else if (data.status === "complete") {
+        sessionStorage.setItem("homi_intent", JSON.stringify(data.intent || currentIntent));
+        window.location.href = "/cooks";
+
       } else {
+        // Update intent — handle both nested and flat response
         if (data.intent) {
           setCurrentIntent(data.intent);
         } else {
-          // intent fields are at root level
           setCurrentIntent({
             cuisine: data.cuisine ?? currentIntent.cuisine,
             dietary_restrictions: data.dietary_restrictions ?? currentIntent.dietary_restrictions,
@@ -140,12 +173,15 @@ export default function Home() {
             location: data.location ?? currentIntent.location,
           });
         }
+
         const turns = data.clarification_turns || clarificationTurns + 1;
         setClarificationTurns(turns);
         setHistory([...newHistory, { role: "assistant", content: data.next_question || "" }]);
+
         const step = detectStep(data.missing_fields || [], data.next_question || "");
         setCurrentStep(step);
         const cfg = STEP_CONFIG[step] || STEP_CONFIG.default;
+
         setMessages(prev => [...prev, {
           id: createId(), role: "bot",
           content: data.next_question || "Could you provide more details?",
@@ -153,7 +189,8 @@ export default function Home() {
           hintLabel: cfg.hintLabel,
         }]);
       }
-    } catch {
+    } catch (err) {
+      console.error("Fetch error:", err);
       setMessages(prev => [...prev, {
         id: createId(), role: "bot",
         content: "Something went wrong. Please try again.",
@@ -186,7 +223,8 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative flex min-h-[480px] items-center justify-center overflow-hidden bg-neutral-900">
-        <div className="absolute inset-0 bg-cover bg-center opacity-40" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&h=600&fit=crop')" }} />
+        <div className="absolute inset-0 bg-cover bg-center opacity-40"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&h=600&fit=crop')" }} />
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl font-bold text-white md:text-5xl">Fresh. Local. Homemade.</h1>
           <p className="mt-3 text-lg text-neutral-300">Home cooks in your area, ready to serve you.</p>
@@ -229,7 +267,9 @@ export default function Home() {
                   <div className={cn("flex w-full", msg.role === "bot" ? "justify-start" : "justify-end")}>
                     <div className={cn(
                       "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
-                      msg.role === "bot" ? "bg-white border border-border text-foreground rounded-bl-md shadow-sm" : "bg-orange-500 text-white rounded-br-md"
+                      msg.role === "bot"
+                        ? "bg-white border border-border text-foreground rounded-bl-md shadow-sm"
+                        : "bg-orange-500 text-white rounded-br-md"
                     )}>
                       {msg.content}
                     </div>
@@ -239,7 +279,8 @@ export default function Home() {
                       <p className="text-xs text-muted-foreground mb-1.5">{msg.hintLabel}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {msg.hints.map((hint) => (
-                          <span key={hint} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground border border-border cursor-default select-none">
+                          <span key={hint}
+                            className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground border border-border cursor-default select-none">
                             <CheckCircle2 className="h-3 w-3 text-orange-400" />
                             {hint}
                           </span>
@@ -271,7 +312,12 @@ export default function Home() {
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendMessage(input); } }}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        sendMessage(input);
+                      }
+                    }}
                     placeholder={cfg.placeholder}
                     disabled={isLoading}
                     className="flex-1 text-sm"
