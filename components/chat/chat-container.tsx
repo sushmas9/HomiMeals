@@ -133,8 +133,7 @@ export function ChatContainer() {
     setMessages([{
       id: createId(),
       role: "bot",
-      content: "Welcome to Homi! Tell me what you're craving and where you are — I'll find the perfect home cook for you.",
-      quick_options: ["Vegan Indian food in Irving TX 75063", "Italian food near Dallas TX", "Thai food in Irving TX"],
+      content: "Hi! Tell me what you're craving and where you are — I'll find the perfect home cook for you.",
     }]);
     setCurrentIntent(initialIntent);
     setHistory([]);
