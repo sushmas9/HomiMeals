@@ -43,6 +43,7 @@ export default function CookDetailPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
   const router = useRouter();
   const params = useParams();
   const cookId = params.id as string;
@@ -212,7 +213,7 @@ export default function CookDetailPage() {
           </div>
         )}
 
-        {showCart && cart.length > 0 && (
+        {showCart && cart.length > 0 && !orderPlaced && (
           <div className="mt-8 rounded-2xl border border-border bg-card p-6">
             <h3 className="mb-4 font-bold text-foreground">Your Order</h3>
             <div className="space-y-2">
@@ -227,9 +228,45 @@ export default function CookDetailPage() {
               <span className="font-bold text-foreground">Total</span>
               <span className="text-lg font-bold text-orange-500">${totalPrice.toFixed(2)}</span>
             </div>
-            <Button className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white">
+            <Button className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={() => setOrderPlaced(true)}>
               Place Order
             </Button>
+          </div>
+        )}
+
+        {orderPlaced && (
+          <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500">
+                <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-green-800">Order Confirmed!</h3>
+            <p className="mt-1 text-sm text-green-700">
+              Your order has been placed with {cook?.name}.
+            </p>
+            <div className="mt-4 rounded-xl bg-white border border-green-100 p-4 text-left space-y-2">
+              {cart.map(({ meal, quantity }) => (
+                <div key={meal.id} className="flex justify-between text-sm">
+                  <span className="text-foreground">{meal.name} × {quantity}</span>
+                  <span className="font-medium">${(meal.price * quantity).toFixed(2)}</span>
+                </div>
+              ))}
+              <div className="flex justify-between border-t border-green-100 pt-2 font-bold">
+                <span>Total</span>
+                <span className="text-orange-500">${totalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-green-600">
+              Full ordering & payment coming in Phase 2 🚀
+            </p>
+            <button onClick={() => router.push("/")}
+              className="mt-4 rounded-full bg-orange-500 px-6 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors">
+              Back to Home
+            </button>
           </div>
         )}
       </main>
