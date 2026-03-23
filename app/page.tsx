@@ -129,7 +129,17 @@ export default function Home() {
         }]);
         setTimeout(() => { window.location.href = "/cooks"; }, 1500);
       } else {
-        if (data.intent) setCurrentIntent(data.intent);
+        if (data.intent) {
+          setCurrentIntent(data.intent);
+        } else {
+          // intent fields are at root level
+          setCurrentIntent({
+            cuisine: data.cuisine ?? currentIntent.cuisine,
+            dietary_restrictions: data.dietary_restrictions ?? currentIntent.dietary_restrictions,
+            additional_details: data.additional_details ?? currentIntent.additional_details,
+            location: data.location ?? currentIntent.location,
+          });
+        }
         const turns = data.clarification_turns || clarificationTurns + 1;
         setClarificationTurns(turns);
         setHistory([...newHistory, { role: "assistant", content: data.next_question || "" }]);
