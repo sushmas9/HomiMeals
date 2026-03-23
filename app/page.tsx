@@ -174,7 +174,7 @@ export default function Home() {
           });
         }
 
-        const turns = data.clarification_turns || clarificationTurns + 1;
+        const turns = clarificationTurns + 1;
         setClarificationTurns(turns);
         setHistory([...newHistory, { role: "assistant", content: data.next_question || "" }]);
 
