@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const INTENT_WEBHOOK = "https://sushmasara9.app.n8n.cloud/webhook-test/homi-intent";
+const INTENT_WEBHOOK = "https://sushmasara9.app.n8n.cloud/webhook/homi-intent";
 
 interface Message {
   id: string;
