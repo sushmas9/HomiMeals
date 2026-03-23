@@ -111,6 +111,7 @@ export default function Home() {
         }),
       });
       const data = await res.json();
+      console.log("Intent response:", JSON.stringify(data, null, 2));
 
       if (data.status === "complete" && data.cooks) {
         sessionStorage.setItem("homi_cooks", JSON.stringify(data.cooks));
