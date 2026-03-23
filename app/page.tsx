@@ -74,7 +74,7 @@ export default function Home() {
     id: createId(),
     role: "bot",
     content: "Hi! Tell me what you're craving and where you are — I'll find the perfect home cook for you.",
-    hints: STEP_CONFIG.default.hints,
+    hints: hints: ["Vegan Indian near Irving TX", "Italian food in Dallas TX", "Thai food near me 75063"],
     hintLabel: STEP_CONFIG.default.hintLabel,
   }]);
   const [input, setInput] = useState("");
