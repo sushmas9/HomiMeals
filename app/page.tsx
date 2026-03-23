@@ -38,7 +38,7 @@ const STEP_CONFIG: Record<string, { placeholder: string; format: string; hints: 
   default: {
     placeholder: "Tell me what you're craving...",
     format: "Example: Vegan Indian food in Irving TX 75063",
-    hints: ["Vegan Indian near Irving TX", "Italian food in Dallas TX", "Thai food near me 75063"],
+    hints: ["Vegan Indian near Irving TX 75063", "Italian food in Dallas TX 75201", "Thai food near Irving TX 75063"],
     hintLabel: "Try typing:",
   },
   location: {
@@ -74,7 +74,7 @@ export default function Home() {
     id: createId(),
     role: "bot",
     content: "Hi! Tell me what you're craving and where you are — I'll find the perfect home cook for you.",
-    hints: hints: ["Vegan Indian near Irving TX", "Italian food in Dallas TX", "Thai food near me 75063"],
+    hints: STEP_CONFIG.default.hints,
     hintLabel: STEP_CONFIG.default.hintLabel,
   }]);
   const [input, setInput] = useState("");
@@ -254,12 +254,7 @@ export default function Home() {
                   <Input
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        sendMessage(input);
-                      }
-                    }}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendMessage(input); } }}
                     placeholder={cfg.placeholder}
                     disabled={isLoading}
                     className="flex-1 text-sm"
