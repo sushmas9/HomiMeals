@@ -35,24 +35,10 @@ interface CartItem {
 
 const COOK_MEALS_WEBHOOK = "https://sushmasara9.app.n8n.cloud/webhook/homi-cook-meals";
 
-const FOOD_PHOTOS = [
-  "1585937421612-70a008356fbe",
-  "1546069901-ba9599a7e63c",
-  "1512621776951-a57141f2eefd",
-  "1455619452474-d2be8b1e70cd",
-  "1467003909585-2f8a72700288",
-  "1540189549336-e6e99e2a3e46",
-  "1504674900247-0877df9cc836",
-  "1476224203421-9ac39bcb3327",
-  "1565299624946-b28f40a0ae38",
-  "1559314809-0d155014e29e",
-  "1525755662778-989d0524087e",
-  "1565299585323-38d6b0865b47",
-];
-
-function getMealImage(name: string): string {
+function getMealImage(name: string, cuisine: string): string {
+  const query = encodeURIComponent(`${name} ${cuisine} food`);
   const seed = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return `https://images.unsplash.com/photo-${FOOD_PHOTOS[seed % FOOD_PHOTOS.length]}?w=400&h=200&fit=crop`;
+  return `https://source.unsplash.com/400x200/?${query}&sig=${seed}`;
 }
 
 export default function CookDetailPage() {
@@ -187,7 +173,7 @@ export default function CookDetailPage() {
               return (
                 <div key={meal.id} className="overflow-hidden rounded-2xl border border-border bg-card">
                   <div className="h-36 w-full overflow-hidden">
-                    <img src={getMealImage(meal.name)} alt={meal.name}
+                    <img src={getMealImage(meal.name, meal.cuisine)} alt={meal.name}
                       className="h-full w-full object-cover" />
                   </div>
                   <div className="p-4">
