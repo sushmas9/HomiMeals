@@ -1,0 +1,260 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { Header } from "@/components/header";
+import { ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface Meal {
+  id: string;
+  name: string;
+  cuisine: string;
+  dietary_tags: string[];
+  additional_tags: string[];
+  price: number;
+  available: boolean;
+}
+
+interface Cook {
+  id: string;
+  name: string;
+  cuisine: string;
+  city: string;
+  state: string;
+  rating: number;
+  license_verified: boolean;
+  match_score?: number;
+  match_reason?: string;
+}
+
+interface CartItem {
+  meal: Meal;
+  quantity: number;
+}
+
+const COOK_MEALS_WEBHOOK = "https://sushmasara9.app.n8n.cloud/webhook/homi-cook-meals";
+
+const FOOD_PHOTOS = [
+  "1585937421612-70a008356fbe",
+  "1546069901-ba9599a7e63c",
+  "1512621776951-a57141f2eefd",
+  "1455619452474-d2be8b1e70cd",
+  "1467003909585-2f8a72700288",
+  "1540189549336-e6e99e2a3e46",
+  "1504674900247-0877df9cc836",
+  "1476224203421-9ac39bcb3327",
+  "1565299624946-b28f40a0ae38",
+  "1559314809-0d155014e29e",
+  "1525755662778-989d0524087e",
+  "1565299585323-38d6b0865b47",
+];
+
+function getMealImage(name: string): string {
+  const seed = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return `https://images.unsplash.com/photo-${FOOD_PHOTOS[seed % FOOD_PHOTOS.length]}?w=400&h=200&fit=crop`;
+}
+
+export default function CookDetailPage() {
+  const [cook, setCook] = useState<Cook | null>(null);
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCart, setShowCart] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const cookId = params.id as string;
+
+  useEffect(() => {
+    // Get cook from sessionStorage
+    const stored = sessionStorage.getItem("homi_cooks");
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        const list: Cook[] = Array.isArray(data) ? data : data.cooks ?? [];
+        const found = list.find(c => c.id === cookId);
+        if (found) setCook(found);
+      } catch { }
+    }
+
+    // Fetch meals from n8n
+    fetch(COOK_MEALS_WEBHOOK, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cook_id: cookId }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        const list = Array.isArray(data.meals) ? data.meals : [];
+        setMeals(list);
+      })
+      .catch(() => setMeals([]))
+      .finally(() => setIsLoading(false));
+  }, [cookId]);
+
+  const addToCart = (meal: Meal) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.meal.id === meal.id);
+      if (existing) return prev.map(i => i.meal.id === meal.id ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { meal, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (mealId: string) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.meal.id === mealId);
+      if (!existing) return prev;
+      if (existing.quantity === 1) return prev.filter(i => i.meal.id !== mealId);
+      return prev.map(i => i.meal.id === mealId ? { ...i, quantity: i.quantity - 1 } : i);
+    });
+  };
+
+  const getQuantity = (mealId: string) => cart.find(i => i.meal.id === mealId)?.quantity || 0;
+  const totalItems = cart.reduce((acc, i) => acc + i.quantity, 0);
+  const totalPrice = cart.reduce((acc, i) => acc + i.meal.price * i.quantity, 0);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="mx-auto max-w-4xl px-4 py-8">
+
+        {/* Back button */}
+        <button onClick={() => router.push("/cooks")}
+          className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="h-4 w-4" /> Back to cooks
+        </button>
+
+        {/* Cook profile */}
+        {cook && (
+          <div className="mb-8 rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 text-2xl font-bold text-orange-500">
+                  {cook.name[0]}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-foreground">{cook.name}</h1>
+                    {cook.license_verified && (
+                      <span className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                        <ShieldCheck className="h-3 w-3" /> TX Licensed
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground capitalize">{cook.cuisine} cuisine · {cook.city}, {cook.state}</p>
+                  <div className="mt-1 flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-orange-400 text-orange-400" />
+                    <span className="text-sm font-medium">{cook.rating}</span>
+                    {cook.match_score && (
+                      <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">
+                        {cook.match_score}/10 match
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {cook.match_reason && (
+              <p className="mt-4 rounded-lg bg-muted px-4 py-3 text-sm text-muted-foreground">
+                💡 {cook.match_reason}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Meals */}
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground">Menu</h2>
+          {totalItems > 0 && (
+            <button onClick={() => setShowCart(!showCart)}
+              className="flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 transition-colors">
+              <ShoppingCart className="h-4 w-4" />
+              {totalItems} item{totalItems > 1 ? "s" : ""} · ${totalPrice.toFixed(2)}
+            </button>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+          </div>
+        ) : meals.length === 0 ? (
+          <p className="py-12 text-center text-muted-foreground">No meals available right now.</p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {meals.map(meal => {
+              const qty = getQuantity(meal.id);
+              return (
+                <div key={meal.id} className="overflow-hidden rounded-2xl border border-border bg-card">
+                  <div className="h-36 w-full overflow-hidden">
+                    <img src={getMealImage(meal.name)} alt={meal.name}
+                      className="h-full w-full object-cover" />
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">{meal.name}</h3>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {meal.dietary_tags?.map(tag => (
+                            <span key={tag} className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700 capitalize">{tag}</span>
+                          ))}
+                          {meal.additional_tags?.map(tag => (
+                            <span key={tag} className="rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-700 capitalize">{tag}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-base font-bold text-foreground">${meal.price.toFixed(2)}</span>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end">
+                      {qty === 0 ? (
+                        <Button size="sm" onClick={() => addToCart(meal)}
+                          className="bg-orange-500 hover:bg-orange-600 text-white text-xs">
+                          Add to order
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => removeFromCart(meal.id)}
+                            className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted transition-colors">
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="w-4 text-center text-sm font-semibold">{qty}</span>
+                          <button onClick={() => addToCart(meal)}
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-white hover:bg-orange-600 transition-colors">
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Cart summary */}
+        {showCart && cart.length > 0 && (
+          <div className="mt-8 rounded-2xl border border-border bg-card p-6">
+            <h3 className="mb-4 font-bold text-foreground">Your Order</h3>
+            <div className="space-y-2">
+              {cart.map(({ meal, quantity }) => (
+                <div key={meal.id} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground">{meal.name} × {quantity}</span>
+                  <span className="font-medium">${(meal.price * quantity).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+              <span className="font-bold text-foreground">Total</span>
+              <span className="text-lg font-bold text-orange-500">${totalPrice.toFixed(2)}</span>
+            </div>
+            <Button className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white">
+              Place Order
+            </Button>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
