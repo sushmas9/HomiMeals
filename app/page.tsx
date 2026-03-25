@@ -145,6 +145,7 @@ export default function Home() {
       });
 
       const data = await res.json();
+      const response = Array.isArray(data) ? data[0] : data;
       console.log("Intent response:", JSON.stringify(data, null, 2));
 
       if (data.status === "complete" && data.cooks) {
