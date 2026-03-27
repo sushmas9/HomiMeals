@@ -49,6 +49,7 @@ export default function CookDetailPage() {
   const cookId = params.id as string;
 
   useEffect(() => {
+    // Try sessionStorage first
     const stored = sessionStorage.getItem("homi_cooks");
     if (stored) {
       try {
@@ -58,6 +59,36 @@ export default function CookDetailPage() {
         if (found) setCook(found);
       } catch { }
     }
+
+    // Fallback: fetch cook directly from Supabase if not in sessionStorage
+    if (!sessionStorage.getItem("homi_cooks")) {
+      fetch(
+        `https://zrhkyznyumvcbbwlwsig.supabase.co/rest/v1/home_cooks?id=eq.${cookId}&select=id,name,cuisine,city,state,zip,rating,license_verified`,
+        {
+          headers: {
+            apikey: "sb_publishable_XpBUBltwp7kJ8tNB_d8y_A_hsofjbf3",
+            Authorization: "Bearer sb_publishable_XpBUBltwp7kJ8tNB_d8y_A_hsofjbf3",
+          },
+        }
+      )
+        .then(r => r.json())
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) setCook(data[0]);
+        })
+        .catch(() => { });
+    }
+
+
+    // useEffect(() => {
+    //   const stored = sessionStorage.getItem("homi_cooks");
+    //   if (stored) {
+    //     try {
+    //       const data = JSON.parse(stored);
+    //       const list: Cook[] = Array.isArray(data) ? data : data.cooks ?? [];
+    //       const found = list.find(c => c.id === cookId);
+    //       if (found) setCook(found);
+    //     } catch { }
+    //   }
 
     fetch(COOK_MEALS_WEBHOOK, {
       method: "POST",
