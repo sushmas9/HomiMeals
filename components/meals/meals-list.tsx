@@ -39,7 +39,8 @@ export function MealsList({ meals, isLoading }: MealsListProps) {
   }
 
   // Sort by score descending
-  const sortedMeals = [...meals].sort((a, b) => b.score - a.score);
+  const sortedMeals = [...meals];
+  // const sortedMeals = [...meals].sort((a, b) => b.score - a.score);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
