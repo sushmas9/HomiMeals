@@ -20,6 +20,26 @@ interface Cook {
   match_reason?: string;
 }
 
+function unwrapCooks(data: unknown): Cook[] {
+  if (!data) return [];
+
+  // Already a flat array of cooks
+  if (Array.isArray(data)) {
+    return data.flatMap((item: Cook) =>
+      item && typeof item === "object" && "cooks" in item && Array.isArray((item as { cooks: Cook[] }).cooks)
+        ? (item as { cooks: Cook[] }).cooks
+        : [item]
+    );
+  }
+
+  // Wrapped in { cooks: [] }
+  if (typeof data === "object" && data !== null && "cooks" in data) {
+    return unwrapCooks((data as { cooks: unknown }).cooks);
+  }
+
+  return [];
+}
+
 export default function CooksPage() {
   const [cooks, setCooks] = useState<Cook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,9 +49,11 @@ export default function CooksPage() {
     const stored = sessionStorage.getItem("homi_cooks");
     if (stored) {
       try {
-        const data = JSON.parse(stored);
-        const list = Array.isArray(data) ? data : data.cooks ?? [];
-        setCooks(list);
+        const raw = JSON.parse(stored);
+        const list = unwrapCooks(raw);
+        // Filter out any malformed entries
+        const valid = list.filter(c => c && c.id && c.name);
+        setCooks(valid);
       } catch {
         setCooks([]);
       }
@@ -59,7 +81,7 @@ export default function CooksPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Home Cooks Near You</h1>
             <p className="text-sm text-muted-foreground">
-              {cooks.length} cooks found · Ranked by match & certification
+              {cooks.length} cook{cooks.length !== 1 ? "s" : ""} found · Ranked by match & certification
             </p>
           </div>
         </div>
@@ -80,9 +102,9 @@ export default function CooksPage() {
                 className="group overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm hover:shadow-md transition-all">
                 <div className="relative h-36 w-full overflow-hidden">
                   <DynamicImage
-                    query={`${cook.cuisine} food cooking homemade`}
-                    seed={getSeed(cook.name)}
-                    alt={cook.name}
+                    query={`${cook.cuisine ?? "food"} food cooking homemade`}
+                    seed={getSeed(cook.name ?? cook.cuisine ?? "food")}
+                    alt={cook.name ?? "Cook"}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
                   {cook.license_verified && (
@@ -90,7 +112,7 @@ export default function CooksPage() {
                       <ShieldCheck className="h-3 w-3" /> Licensed
                     </div>
                   )}
-                  {cook.match_score && (
+                  {cook.match_score != null && (
                     <div className="absolute top-2 left-2 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white shadow">
                       {cook.match_score}/10 match
                     </div>
