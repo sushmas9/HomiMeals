@@ -49,7 +49,6 @@ export default function CookDetailPage() {
   const cookId = params.id as string;
 
   useEffect(() => {
-    // Try sessionStorage first
     const stored = sessionStorage.getItem("homi_cooks");
     if (stored) {
       try {
@@ -60,7 +59,6 @@ export default function CookDetailPage() {
       } catch { }
     }
 
-    // Fallback: fetch cook directly from Supabase if not in sessionStorage
     if (!sessionStorage.getItem("homi_cooks")) {
       fetch(
         `https://zrhkyznyumvcbbwlwsig.supabase.co/rest/v1/home_cooks?id=eq.${cookId}&select=id,name,cuisine,city,state,zip,rating,license_verified`,
@@ -77,18 +75,6 @@ export default function CookDetailPage() {
         })
         .catch(() => { });
     }
-
-
-    // useEffect(() => {
-    //   const stored = sessionStorage.getItem("homi_cooks");
-    //   if (stored) {
-    //     try {
-    //       const data = JSON.parse(stored);
-    //       const list: Cook[] = Array.isArray(data) ? data : data.cooks ?? [];
-    //       const found = list.find(c => c.id === cookId);
-    //       if (found) setCook(found);
-    //     } catch { }
-    //   }
 
     fetch(COOK_MEALS_WEBHOOK, {
       method: "POST",
@@ -196,9 +182,9 @@ export default function CookDetailPage() {
                 <div key={meal.id} className="overflow-hidden rounded-2xl border border-border bg-card">
                   <div className="h-36 w-full overflow-hidden">
                     <DynamicImage
-                      query={`${meal.name} ${meal.cuisine} food dish`}
-                      seed={getSeed(meal.name)}
-                      alt={meal.name}
+                      query={`${meal.name ?? "food"} ${meal.cuisine ?? ""} authentic dish food photography`}
+                      seed={getSeed(meal.name ?? meal.cuisine ?? "food")}
+                      alt={meal.name ?? "Meal"}
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -215,7 +201,7 @@ export default function CookDetailPage() {
                           ))}
                         </div>
                       </div>
-                      <span className="text-base font-bold text-foreground">${meal.price.toFixed(2)}</span>
+                      <span className="text-base font-bold text-foreground">${Number(meal.price).toFixed(2)}</span>
                     </div>
                     <div className="mt-3 flex items-center justify-end">
                       {qty === 0 ? (
