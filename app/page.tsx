@@ -148,22 +148,29 @@ export default function Home() {
       const response = Array.isArray(data) ? data[0] : data;
       console.log("Intent response:", JSON.stringify(data, null, 2));
 
-      if (data.status === "complete" && data.cooks) {
-        sessionStorage.setItem("homi_cooks", JSON.stringify(data.cooks));
-        sessionStorage.setItem("homi_intent", JSON.stringify(currentIntent));
-        setIsDone(true);
-        setMessages(prev => [...prev, {
-          id: createId(), role: "bot",
-          content: `Found ${data.cooks.length} home cooks for you! Redirecting...`,
-        }]);
-        setTimeout(() => { window.location.href = "/cooks"; }, 1500);
+      if (data.status === "complete") {
+        const cooks = data.cooks ?? [];
 
-      } else if (data.status === "complete") {
-        sessionStorage.setItem("homi_intent", JSON.stringify(data.intent || currentIntent));
-        window.location.href = "/cooks";
+        if (cooks.length === 0) {
+          setMessages(prev => [...prev, {
+            id: createId(), role: "bot",
+            content: "No home cooks found in your area for that cuisine yet. We're growing fast — try a different cuisine or check back soon!",
+            hints: STEP_CONFIG.cuisine.hints,
+            hintLabel: "Try one of these cuisines:",
+          }]);
+          setIsDone(false);
+        } else {
+          sessionStorage.setItem("homi_cooks", JSON.stringify(cooks));
+          sessionStorage.setItem("homi_intent", JSON.stringify(currentIntent));
+          setIsDone(true);
+          setMessages(prev => [...prev, {
+            id: createId(), role: "bot",
+            content: `Found ${cooks.length} home cook${cooks.length > 1 ? "s" : ""} for you! Redirecting...`,
+          }]);
+          setTimeout(() => { window.location.href = "/cooks"; }, 1500);
+        }
 
       } else {
-        // Update intent — handle both nested and flat response
         if (data.intent) {
           setCurrentIntent(data.intent);
         } else {
