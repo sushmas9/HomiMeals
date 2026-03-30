@@ -192,7 +192,8 @@ export default function Home() {
 
         setMessages(prev => [...prev, {
           id: createId(), role: "bot",
-          content: data.next_question || "Could you provide more details?",
+          content: data.next_question || "Do you have any dietary restrictions? (e.g. vegetarian, vegan, gluten-free, or none)",
+
           hints: cfg.hints,
           hintLabel: cfg.hintLabel,
         }]);
