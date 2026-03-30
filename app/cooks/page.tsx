@@ -22,8 +22,6 @@ interface Cook {
 
 function unwrapCooks(data: unknown): Cook[] {
   if (!data) return [];
-
-  // Already a flat array of cooks
   if (Array.isArray(data)) {
     return data.flatMap((item: Cook) =>
       item && typeof item === "object" && "cooks" in item && Array.isArray((item as { cooks: Cook[] }).cooks)
@@ -31,12 +29,9 @@ function unwrapCooks(data: unknown): Cook[] {
         : [item]
     );
   }
-
-  // Wrapped in { cooks: [] }
   if (typeof data === "object" && data !== null && "cooks" in data) {
     return unwrapCooks((data as { cooks: unknown }).cooks);
   }
-
   return [];
 }
 
@@ -51,7 +46,6 @@ export default function CooksPage() {
       try {
         const raw = JSON.parse(stored);
         const list = unwrapCooks(raw);
-        // Filter out any malformed entries
         const valid = list.filter(c => c && c.id && c.name);
         setCooks(valid);
       } catch {
@@ -102,7 +96,7 @@ export default function CooksPage() {
                 className="group overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm hover:shadow-md transition-all">
                 <div className="relative h-36 w-full overflow-hidden">
                   <DynamicImage
-                    query={`${cook.cuisine ?? "food"} food cooking homemade`}
+                    query={`${cook.cuisine ?? "food"} cuisine authentic dish food photography`}
                     seed={getSeed(cook.name ?? cook.cuisine ?? "food")}
                     alt={cook.name ?? "Cook"}
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"

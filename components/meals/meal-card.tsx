@@ -13,7 +13,6 @@ interface Meal {
   additional_tags?: string[];
   price: number;
   available: boolean;
-  // legacy fields — optional
   score?: number;
   dietary?: string;
   additional?: string;
@@ -26,7 +25,6 @@ interface MealCardProps {
 }
 
 export function MealCard({ meal }: MealCardProps) {
-  // Handle both old shape (dietary, additional) and new shape (dietary_tags, additional_tags)
   const dietaryTags = meal.dietary_tags ?? (meal.dietary ? [meal.dietary] : []);
   const additionalTags = meal.additional_tags ?? (meal.additional ? [meal.additional] : []);
 
@@ -34,9 +32,9 @@ export function MealCard({ meal }: MealCardProps) {
     <Card className="overflow-hidden transition-all hover:shadow-lg group">
       <div className="relative h-40 w-full overflow-hidden">
         <DynamicImage
-          query={`${meal.name} ${meal.cuisine} food dish`}
-          seed={getSeed(meal.name)}
-          alt={meal.name}
+          query={`${meal.name} ${meal.cuisine} authentic dish food photography`}
+          seed={getSeed(meal.name ?? meal.cuisine ?? "food")}
+          alt={meal.name ?? "Meal"}
           className="h-full w-full object-cover transition-transform group-hover:scale-105"
         />
       </div>
