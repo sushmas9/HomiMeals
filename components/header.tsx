@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { UtensilsCrossed, Home, Apple } from "lucide-react";
+import { UtensilsCrossed, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Header() {
@@ -24,7 +24,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/nutrition">
-              <Apple className="mr-2 h-4 w-4" />
+              <span className="mr-2 text-red-500">🍎</span>
               Calorie Checker 🔥
             </Link>
           </Button>
