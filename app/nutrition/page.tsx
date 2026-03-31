@@ -1,18 +1,21 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { Header } from "@/components/header";
 import { Loader2, ChevronDown, X } from "lucide-react";
 
 interface NutritionResult {
   recipe_name: string;
   detected_ingredients: string[];
-  calories: number;
-  total_fat: number;
-  total_carbs: number;
-  protein: number;
+  per_serving: {
+    calories: number;
+    fat_g: number;
+    carbs_g: number;
+    protein_g: number;
+  };
   total_recipe_calories: number;
-  confidence: number;
+  confidence_score: number;
 }
 
 export default function NutritionPage() {
@@ -159,7 +162,13 @@ export default function NutritionPage() {
   // Email gate state
   if (state === "gate") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 relative">
+        <Link 
+          href="/" 
+          className="absolute top-4 left-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          &larr; Back to Homi
+        </Link>
         <div className="w-full max-w-md text-center">
           <div className="text-5xl text-red-500 mb-6">🍎</div>
           
@@ -206,6 +215,12 @@ export default function NutritionPage() {
       <Header />
       
       <div className="max-w-2xl mx-auto px-4 py-8">
+        <Link 
+          href="/" 
+          className="inline-block text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+        >
+          &larr; Back to Homi
+        </Link>
         <div className="text-center mb-6">
           <div className="text-5xl text-red-500 mb-4">🍎</div>
           <h1 className="text-2xl font-bold tracking-tight mb-2">
@@ -362,7 +377,7 @@ export default function NutritionPage() {
             {/* Calories Row */}
             <div className="flex justify-between items-baseline py-2">
               <span className="font-medium">Calories</span>
-              <span className="text-2xl font-bold">{result.calories}</span>
+              <span className="text-2xl font-bold">{result.per_serving.calories}</span>
             </div>
             
             <div className="border-t border-border" />
@@ -370,21 +385,21 @@ export default function NutritionPage() {
             {/* Macros */}
             <div className="flex justify-between py-2">
               <span>Total Fat</span>
-              <span>{result.total_fat}g</span>
+              <span>{result.per_serving.fat_g}g</span>
             </div>
             
             <div className="border-t border-border" />
             
             <div className="flex justify-between py-2">
               <span>Total Carbohydrate</span>
-              <span>{result.total_carbs}g</span>
+              <span>{result.per_serving.carbs_g}g</span>
             </div>
             
             <div className="border-t border-border" />
             
             <div className="flex justify-between py-2">
               <span>Protein</span>
-              <span>{result.protein}g</span>
+              <span>{result.per_serving.protein_g}g</span>
             </div>
             
             <div className="border-t border-border my-3" />
@@ -399,12 +414,12 @@ export default function NutritionPage() {
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Confidence Score</span>
-                <span>{result.confidence}/100</span>
+                <span>{result.confidence_score}/100</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-500 rounded-full transition-all"
-                  style={{ width: `${result.confidence}%` }}
+                  style={{ width: `${result.confidence_score}%` }}
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
