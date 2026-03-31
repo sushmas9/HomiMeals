@@ -57,7 +57,7 @@ const STEP_CONFIG: Record<string, { placeholder: string; format: string; hints: 
   dietary: {
     placeholder: "Any dietary restrictions?",
     format: "Example: Vegan, Vegetarian, Gluten-Free, or None",
-    hints: ["Vegan", "Vegetarian", "Gluten-Free", "Halal", "No restrictions"],
+    hints: ["Vegan", "Vegetarian", "Gluten-Free", "No restrictions"],
     hintLabel: "Options:",
   },
   additional: {
@@ -69,7 +69,7 @@ const STEP_CONFIG: Record<string, { placeholder: string; format: string; hints: 
   cuisine: {
     placeholder: "What cuisine are you craving?",
     format: "Example: Indian, Italian, Thai, Mexican",
-    hints: ["Indian", "Italian", "Thai", "Mexican", "Chinese"],
+    hints: ["Indian", "Italian", "Thai", "Mexican"],
     hintLabel: "Options:",
   },
 };
