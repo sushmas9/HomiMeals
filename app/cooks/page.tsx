@@ -108,3 +108,36 @@ export default function CooksPage() {
                   )}
                   {cook.match_score != null && (
                     <div className="absolute top-2 left-2 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white shadow">
+                      {cook.match_score}/10 match
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-foreground">{cook.name}</h3>
+                      <p className="text-sm text-muted-foreground capitalize">{cook.cuisine} cuisine</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm">
+                      <Star className="h-4 w-4 fill-orange-400 text-orange-400" />
+                      <span className="font-medium">{cook.rating}</span>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground capitalize">
+                    {cook.city}, {cook.state}
+                  </p>
+                  {cook.match_reason && (
+                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{cook.match_reason}</p>
+                  )}
+                  <div className="mt-3 text-xs font-medium text-orange-500 group-hover:underline">
+                    View meals →
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
