@@ -24,8 +24,6 @@ export const CUISINE_OPTIONS = [
   "Mexican",
   "Indian",
   "Thai",
-  "American",
-  "Mediterranean",
 ] as const;
 
 export const DIETARY_OPTIONS = [
