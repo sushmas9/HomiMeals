@@ -414,11 +414,11 @@ export default function NutritionPage() {
             <div className="mb-2">
               <div className="flex justify-between text-sm mb-1">
                 <span>Confidence Score</span>
-                <span>{result.confidence_score}/100</span>
+                <span className="text-green-600">{result.confidence_score}/100</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-blue-500 rounded-full transition-all"
+                  className="h-full bg-green-500 rounded-full transition-all"
                   style={{ width: `${result.confidence_score}%` }}
                 />
               </div>
