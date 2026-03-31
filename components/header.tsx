@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { UtensilsCrossed, Home } from "lucide-react";
+import { UtensilsCrossed, Home, Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Header() {
@@ -21,10 +21,18 @@ export function Header() {
           <UtensilsCrossed className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-semibold tracking-tight">Homi</h1>
         </button>
-        <Button variant="ghost" size="sm" onClick={handleHomeClick}>
-          <Home className="mr-2 h-4 w-4" />
-          Home
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/nutrition">
+              <Apple className="mr-2 h-4 w-4" />
+              Nutrition
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleHomeClick}>
+            <Home className="mr-2 h-4 w-4" />
+            Home
+          </Button>
+        </div>
       </div>
     </header>
   );
