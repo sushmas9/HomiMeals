@@ -25,7 +25,7 @@ export function Header() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/nutrition">
               <Apple className="mr-2 h-4 w-4" />
-              Nutrition
+              Calorie Checker 🔥
             </Link>
           </Button>
           <Button variant="ghost" size="sm" onClick={handleHomeClick}>
