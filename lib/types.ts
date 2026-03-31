@@ -22,14 +22,10 @@ export type ChatStep = "cuisine" | "dietary" | "details" | "location" | "review"
 export const CUISINE_OPTIONS = [
   "Italian",
   "Mexican",
-  "Chinese",
-  "Japanese",
   "Indian",
   "Thai",
   "American",
   "Mediterranean",
-  "Korean",
-  "Vietnamese",
 ] as const;
 
 export const DIETARY_OPTIONS = [
@@ -38,7 +34,6 @@ export const DIETARY_OPTIONS = [
   "Gluten-Free",
   "Dairy-Free",
   "Nut-Free",
-  "Halal",
   "Kosher",
   "Low-Carb",
   "Keto",
