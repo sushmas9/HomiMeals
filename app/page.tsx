@@ -115,9 +115,11 @@ export default function Home() {
     if (!text.trim() || isLoading) return;
 
     const userMsg: Message = { id: createId(), role: "user", content: text };
+
+    // ── FIXED ORDER: loading first so typing dots appear instantly ──
+    setIsLoading(true);
     setMessages(prev => [...prev, userMsg]);
     setInput("");
-    setIsLoading(true);
 
     const newHistory = [...history, { role: "user", content: text }];
 
@@ -193,7 +195,6 @@ export default function Home() {
         setMessages(prev => [...prev, {
           id: createId(), role: "bot",
           content: data.next_question || "Do you have any dietary restrictions? (e.g. vegetarian, vegan, gluten-free, or none)",
-
           hints: cfg.hints,
           hintLabel: cfg.hintLabel,
         }]);
