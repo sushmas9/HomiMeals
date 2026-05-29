@@ -64,8 +64,8 @@ export default function CookDetailPage() {
         `https://zrhkyznyumvcbbwlwsig.supabase.co/rest/v1/home_cooks?id=eq.${cookId}&select=id,name,cuisine,city,state,zip,rating,license_verified`,
         {
           headers: {
-            apikey: "sb_publishable_XpBUBltwp7kJ8tNB_d8y_A_hsofjbf3",
-            Authorization: "Bearer sb_publishable_XpBUBltwp7kJ8tNB_d8y_A_hsofjbf3",
+            apikey: "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY",
+            Authorization: "Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}",
           },
         }
       )
