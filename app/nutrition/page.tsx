@@ -128,25 +128,20 @@ export default function NutritionPage() {
         body.image = imageBase64;
       }
 
-      const response = await fetch(
-        "https://zrhkyznyumvcbbwlwsig.supabase.co/functions/v1/analyze",
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        }
+      const { data, error: analysisError } = await supabase.functions.invoke(
+        "analyze",
+        { body }
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        setResult(data);
-      } else {
+      if (analysisError) {
+        console.error("[v0] Nutrition analysis failed:", analysisError);
         setAnalyzeError("Failed to analyze. Please try again.");
+        return;
       }
-    } catch {
+
+      setResult(data as NutritionResult);
+    } catch (analysisError) {
+      console.error("[v0] Nutrition analysis failed:", analysisError);
       setAnalyzeError("Failed to analyze. Please try again.");
     } finally {
       setIsAnalyzing(false);
