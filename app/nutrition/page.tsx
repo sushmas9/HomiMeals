@@ -133,7 +133,7 @@ export default function NutritionPage() {
         {
           method: "POST",
           headers: {
-            Authorization: "Bearer sb_publishable_XpBUBltwp7kJ8tNB_d8y_A_hsofjbf3",
+            Authorization: "Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}",
             "Content-Type": "application/json",
           },
           body: JSON.stringify(body),
