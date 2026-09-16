@@ -128,20 +128,37 @@ export default function NutritionPage() {
         body.image = imageBase64;
       }
 
-      const { data, error: analysisError } = await supabase.functions.invoke(
-        "analyze",
-        { body }
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error("Supabase configuration is missing");
+      }
+
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/analyze`,
+        {
+          method: "POST",
+          headers: {
+            apikey: supabaseAnonKey,
+            Authorization: `Bearer ${supabaseAnonKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
       );
 
-      if (analysisError) {
-        console.error("[v0] Nutrition analysis failed:", analysisError);
+      if (!response.ok) {
+        const details = await response.text();
+        console.error("[v0] Nutrition analysis failed:", response.status, details);
         setAnalyzeError("Failed to analyze. Please try again.");
         return;
       }
 
-      setResult(data as NutritionResult);
+      const data = await response.json();
+      setResult(data);
     } catch (analysisError) {
-      console.error("[v0] Nutrition analysis failed:", analysisError);
+      console.error("[v0] Nutrition analysis request failed:", analysisError);
       setAnalyzeError("Failed to analyze. Please try again.");
     } finally {
       setIsAnalyzing(false);
