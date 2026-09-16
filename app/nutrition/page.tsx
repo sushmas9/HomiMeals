@@ -90,9 +90,29 @@ export default function NutritionPage() {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setImageBase64(base64);
-      setImagePreview(base64);
+      const source = new Image();
+      source.onload = () => {
+        const maxDimension = 1600;
+        const scale = Math.min(1, maxDimension / Math.max(source.naturalWidth, source.naturalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          setAnalyzeError("This image could not be prepared. Please try another image.");
+          return;
+        }
+
+        context.drawImage(source, 0, 0, canvas.width, canvas.height);
+        const optimizedImage = canvas.toDataURL("image/jpeg", 0.82);
+        setImageBase64(optimizedImage);
+        setImagePreview(optimizedImage);
+      };
+      source.onerror = () => {
+        setAnalyzeError("This image could not be read. Please try another image.");
+      };
+      source.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -135,9 +155,12 @@ export default function NutritionPage() {
         throw new Error("Supabase configuration is missing");
       }
 
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/analyze`,
-        {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 30_000);
+      let response: Response;
+
+      try {
+        response = await fetch(`${supabaseUrl}/functions/v1/analyze`, {
           method: "POST",
           headers: {
             apikey: supabaseAnonKey,
@@ -145,13 +168,20 @@ export default function NutritionPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(body),
-        }
-      );
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(timeout);
+      }
 
       if (!response.ok) {
         const details = await response.text();
         console.error("[v0] Nutrition analysis failed:", response.status, details);
-        setAnalyzeError("Failed to analyze. Please try again.");
+        setAnalyzeError(
+          response.status === 429
+            ? "The analyzer is busy right now. Please wait a moment and try again."
+            : "Failed to analyze. Please try again."
+        );
         return;
       }
 
