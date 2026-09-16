@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Loader2, ChevronDown, X } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface NutritionResult {
   recipe_name: string;
@@ -56,29 +57,22 @@ export default function NutritionPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        "https://zrhkyznyumvcbbwlwsig.supabase.co/rest/v1/leads",
-        {
-          method: "POST",
-          headers: {
-            apikey: "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY",
-            Authorization: "Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}",
-            "Content-Type": "application/json",
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({
-            email: email,
-            source: "calorie_checker",
-          }),
-        }
-      );
+      const { error: leadError } = await supabase.from("leads").insert({
+        email: email.trim().toLowerCase(),
+        source: "calorie_checker",
+      });
 
-      if (response.ok || response.status === 201) {
-        setState("unlocked");
-      } else {
+      // A returning lead may already exist under a unique email constraint.
+      // They have already been granted access, so treat that case as success.
+      if (leadError && leadError.code !== "23505") {
+        console.error("[v0] Lead submission failed:", leadError);
         setError("Something went wrong. Please try again.");
+        return;
       }
-    } catch {
+
+      setState("unlocked");
+    } catch (submissionError) {
+      console.error("[v0] Lead submission failed:", submissionError);
       setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
